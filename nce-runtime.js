@@ -1,6 +1,6 @@
 (function() {
-    var origin = "https://magnetto.framer.website";
-    var allowed = ["https://magnetto.framer.website/"];
+    var origin = "https://sofiullah.framer.website";
+    var allowed = ["https://sofiullah.framer.website/"];
     var page = window.__NCE_PAGE__ || { path: "/", root: "./" };
     var relativeRoot = page.root || "./";
     var pageBase = origin + (page.path || "/");
@@ -146,4 +146,5 @@
             }
         }, true);
     });
-})();
+
+    

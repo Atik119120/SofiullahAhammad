@@ -1,4 +1,4 @@
-# Exported Site: magnetto.framer.website
+# Exported Site: Sofiullah.framer.website
 Exported on 2026-09-04 by NoCodeExport
 
 ## How to View Your Site
