@@ -147,4 +147,62 @@
         }, true);
     });
 
-    
+    // ============================================================
+    // SOFIULLAH TEXT REPLACEMENT — replaces MAGNETTO everywhere
+    // Framer CDN bundles hard-code "Magnetto" / "hi@magnetto.com"
+    // This runs after hydration and keeps replacing on every render
+    // ============================================================
+    (function() {
+        function replaceTextNodes(root) {
+            if (!root) return;
+            var walker = document.createTreeWalker(
+                root, NodeFilter.SHOW_TEXT, null, false
+            );
+            var node;
+            while ((node = walker.nextNode())) {
+                if (/magnetto/i.test(node.nodeValue)) {
+                    node.nodeValue = node.nodeValue
+                        .replace(/MAGNETTO/g, 'SOFIULLAH')
+                        .replace(/Magnetto/g, 'Sofiullah')
+                        .replace(/magnetto/g, 'sofiullah');
+                }
+            }
+            // Fix href attributes (e.g. mailto:hi@magnetto.com)
+            var links = (root.querySelectorAll ? root.querySelectorAll('a[href*="magnetto"]') : []);
+            Array.prototype.forEach.call(links, function(a) {
+                var raw = a.getAttribute('href') || '';
+                if (/magnetto/i.test(raw)) {
+                    a.setAttribute('href', raw
+                        .replace(/MAGNETTO/g, 'SOFIULLAH')
+                        .replace(/Magnetto/g, 'Sofiullah')
+                        .replace(/magnetto/g, 'sofiullah'));
+                }
+            });
+        }
+
+        var _busy = false;
+        var _obs = new MutationObserver(function() {
+            if (_busy) return;
+            _busy = true;
+            requestAnimationFrame(function() {
+                replaceTextNodes(document.body);
+                _busy = false;
+            });
+        });
+
+        function startObs() {
+            _obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+            replaceTextNodes(document.body);
+        }
+
+        if (document.body) { startObs(); }
+        else { document.addEventListener('DOMContentLoaded', startObs); }
+
+        // Fast: every 50ms for 10s, then every 500ms
+        var _n = 0;
+        var _fi = setInterval(function() {
+            replaceTextNodes(document.body);
+            if (++_n > 200) { clearInterval(_fi); setInterval(function() { replaceTextNodes(document.body); }, 500); }
+        }, 50);
+    })();
+})();

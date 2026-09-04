@@ -263,6 +263,7 @@
         });
 
         // 2. Force text replacement for Magnetto -> Sofiullah across all text nodes
+        var _isSyncing = false;
         function walkText(node) {
             if (!node) return;
             if (node.nodeType === 3) {
@@ -278,7 +279,20 @@
                 }
             }
         }
+
+        // Also fix href/mailto attributes for email links
+        function fixAttrs() {
+            var links = document.querySelectorAll('a[href*="magnetto"]');
+            links.forEach(function(a) {
+                a.href = a.href
+                    .replace(/MAGNETTO/g, 'SOFIULLAH')
+                    .replace(/Magnetto/g, 'Sofiullah')
+                    .replace(/magnetto/g, 'sofiullah');
+            });
+        }
+
         walkText(document.body);
+        fixAttrs();
 
         // 3. Remove badges
         var badges = document.querySelectorAll('#__framer-badge-container, [data-framer-badge], .framer-badge, .framer-sAzFB, .framer-1tc718i-container, div[data-nce-attribution-bar]');
@@ -287,22 +301,37 @@
         });
     }
 
-    // Run on every frame / mutation
+    // Run on every mutation — no attributes:true to avoid infinite loop
+    var _mutationBusy = false;
     var observer = new MutationObserver(function() {
-        syncAll();
+        if (_mutationBusy) return;
+        _mutationBusy = true;
+        requestAnimationFrame(function() {
+            syncAll();
+            _mutationBusy = false;
+        });
     });
 
     if (document.body) {
-        observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
+        observer.observe(document.body, { childList: true, subtree: true, characterData: true });
         syncAll();
     } else {
         document.addEventListener('DOMContentLoaded', function() {
-            observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
+            observer.observe(document.body, { childList: true, subtree: true, characterData: true });
             syncAll();
         });
     }
 
-    setInterval(syncAll, 100);
+    // Aggressive: run every 50ms for first 10 seconds, then every 500ms
+    var _syncCount = 0;
+    var _fastInterval = setInterval(function() {
+        syncAll();
+        _syncCount++;
+        if (_syncCount > 200) {
+            clearInterval(_fastInterval);
+            setInterval(syncAll, 500);
+        }
+    }, 50);
 })();
 </script>
 
